@@ -1,0 +1,146 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta content="en-us" http-equiv="Content-Language">
+<link href="lab4Untitled_1.css" rel="stylesheet" type="text/css">
+</head>
+
+<body class="newStyle1">
+
+<table style="border-color: #000000; border-width: 0; width: 100%; border-spacing: 0;" align="center" cellpadding="2" cellspacing="0">
+    <tbody><tr>
+        <td style="text-align: left; color: #FFFFFF; font-family: 'Instrument Serif'; font-size: 120px; padding-left: 15px; line-height: 1.2; height: 100px; width: 1296px;">
+                ToDo App</td>
+        <td style="text-align: left; color: #FFFFFF; font-family: 'Instrument Serif'; font-size: 120px; padding-left: 200px; line-height: 1.2; height: 100px;">
+                &nbsp;</td>
+    </tr>
+        <tr>
+        <td colspan="2" style="padding: 0; height: 3;">
+            <div class="horizon-line" style="margin-bottom: 0px; text-align: center;"></div>
+        </td>
+    </tr>
+
+   <tr>
+        <td colspan="2" style="text-align: center; padding-top: 20px; padding-left:10px; font-size:15px;">
+        <table style="width: 100%">
+            <tbody><tr>
+                <td style="text-align: left; width: 882px;">
+                <span style="color: #FFFFFF; font-family: Arial, Helvetica, sans-serif;">
+                <form method="post" onsubmit="event.preventDefault(); addName();">
+                    <input id="name" name="Text1" style="width: 630px; height: 38px" type="text" placeholder="Enter Task Here...">
+                    <span style="color: #FFFFFF; padding-left: 10px;font-family: Arial, Helvetica, sans-serif;">
+                        <input id="greet" name="Button1" class="button" type="button" value="Enter" style="height: 38px; width: 74px" onclick="addName()">
+                    </span>
+                </form>
+                        <input id="greet0" name="Button2" class="button2" type="button" value="All" style="height: 32px; width: 147px" onclick="setFilter('All')">
+                        <input id="greet1" name="Button3" class="button2" type="button" value="Active" style="height: 32px; width: 147px" onclick="setFilter('Active')">
+                        <input id="greet2" name="Button4" class="button2" type="button" value="Completed" style="height: 32px; width: 147px" onclick="setFilter('Completed')"><br></span></td>
+                <td style="text-align: left; width: 768px; vertical-align: top;">
+                <span style="color: #FFFFFF; font-family: Arial, Helvetica, sans-serif;">
+                <strong><em>Tips</em></strong>:<br>- Double-Click a task to edit 
+                it<br>- Press Enter to 
+                save<br><br>
+                        <input id="greet3" name="Button5" class="button3" type="button" value="Clear Completed" style="height: 28px; width: 147px" onclick="clearCompleted()">
+                        <input id="greet4" name="Button6" class="button3" type="button" value="Clear All" style="height: 28px; width: 147px" onclick="clearAll()"></span></td></tr>
+            <tr>
+                <td style="text-align: left; width: 882px; padding-top: 20px;">
+                    <div id="list"></div>
+                </td>
+                <td style="text-align: left; width: 768px;">
+                &nbsp;</td></tr>
+            <tr>
+                <td style="text-align: left; width: 882px; padding-top: 20px;">
+                <span style="color: #FFFFFF; font-family: Arial, Helvetica, sans-serif;">
+                <span id="item-count">0</span> items left</span></td>
+                <td style="text-align: left; width: 768px;">
+                <span style="color: #FFFFFF; font-family: Arial, Helvetica, sans-serif;">
+                        &nbsp;</span></td></tr>
+        </tbody></table>
+        </td>
+    </tr>
+</tbody></table>
+
+<script>
+    class Todo {
+        constructor(id, text) {
+            this.id = id;
+            this.text = text;
+            this.completed = false;
+        }
+    }
+
+    let todos = [];
+    let currentFilter = 'All';
+
+    const inputField = document.getElementById('name');
+    const listContainer = document.getElementById('list');
+    const itemCountSpan = document.getElementById('item-count');
+
+    function addName() {
+        const text = inputField.value.trim();
+        if (text) {
+            todos = [...todos, new Todo(Date.now(), text)];
+            inputField.value = '';
+            render();
+        }
+    }
+
+    const setFilter = (filter) => {
+        currentFilter = filter;
+        render();
+    };
+
+    const toggleTodo = (id) => {
+        todos = todos.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
+        render();
+    };
+
+    const deleteTodo = (id) => {
+        todos = todos.filter(t => t.id !== id);
+        render();
+    };
+
+    const editTodo = (id) => {
+        const todo = todos.find(t => t.id === id);
+        if (!todo) return;
+        const newText = prompt('Edit task:', todo.text);
+        if (newText !== null && newText.trim() !== '') {
+            todos = todos.map(t => t.id === id ? { ...t, text: newText.trim() } : t);
+            render();
+        } else if (newText !== null && newText.trim() === '') {
+            deleteTodo(id);
+        }
+    };
+
+    const clearCompleted = () => {
+        todos = todos.filter(t => !t.completed);
+        render();
+    };
+
+    const clearAll = () => {
+        todos = [];
+        render();
+    };
+
+    const render = () => {
+        let filteredTodos = todos;
+        if (currentFilter === 'Active') filteredTodos = todos.filter(t => !t.completed);
+        if (currentFilter === 'Completed') filteredTodos = todos.filter(t => t.completed);
+
+        listContainer.innerHTML = filteredTodos.map(todo => `
+            <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 15px; background-color: #111; padding: 10px; border-left: 3px solid #00A19B;">
+                <input type="checkbox" style="cursor: pointer; width: 18px; height: 18px;" ${todo.completed ? 'checked' : ''} onchange="toggleTodo(${todo.id})">
+                <span ondblclick="editTodo(${todo.id})" style="flex-grow: 1; cursor: pointer; font-size: 16px; text-decoration: ${todo.completed ? 'line-through' : 'none'}; color: ${todo.completed ? '#666' : '#FFF'};">
+                    ${todo.text}
+                </span>
+                <button onclick="deleteTodo(${todo.id})" style="background: transparent; border: none; color: #555; cursor: pointer; font-size: 18px;" onmouseover="this.style.color='#ff4c4c'" onmouseout="this.style.color='#555'">&#128465;</button>
+            </div>
+        `).join('');
+
+        const activeCount = todos.filter(t => !t.completed).length;
+        itemCountSpan.textContent = activeCount;
+    };
+
+    // Initial load
+    render();
+</script>
+</body></html>
